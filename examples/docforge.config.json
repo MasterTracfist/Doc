@@ -1,0 +1,40 @@
+{
+  "_comment": "Sample DocForge config used by the self-test CI and as a starting template. Roots and output are relative to the repo root (where you run `node src/index.js`). Copy this, point `roots` at your own repos, and adjust the `documents` match rules.",
+  "title": "Notes API Manual",
+  "subtitle": "Sample manual built by DocForge",
+  "output": "./examples/_manual",
+  "roots": [
+    "examples/corpus/notes-api"
+  ],
+  "ignore": ["node_modules", ".git", "dist", "build", "coverage", ".next", "out", "target", "vendor", ".cache"],
+  "include": {
+    "markdown": [".md", ".markdown"],
+    "images": [".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp"],
+    "other": [".yaml", ".yml", ".json"]
+  },
+  "documents": [
+    {
+      "id": "user-guide",
+      "title": "User Guide",
+      "audience": "End users",
+      "blurb": "How to use the service day to day.",
+      "match": ["quickstart", "getting.?started", "guide", "user", "readme", "tutorial", "how.?to", "overview"]
+    },
+    {
+      "id": "api-reference",
+      "title": "API Reference",
+      "audience": "Integrators",
+      "blurb": "Endpoints, payloads, and error codes.",
+      "match": ["api", "endpoint", "reference", "swagger", "openapi", "rest", "webhook"]
+    },
+    {
+      "id": "operations",
+      "title": "Operations",
+      "audience": "Operators",
+      "blurb": "Configure, deploy, and run the service.",
+      "match": ["deploy", "config", "monitor", "security", "runbook", "ops", "scaling", "architecture"]
+    }
+  ],
+  "fallbackDocument": "user-guide",
+  "sectionOrder": ["overview", "how-to", "reference", "concept", "ops", "troubleshooting", "other"]
+}

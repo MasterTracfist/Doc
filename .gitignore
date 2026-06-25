@@ -1,0 +1,8 @@
+node_modules/
+# Built output (the sample manual is regenerated, never committed).
+_manual/
+examples/_manual/
+# Corpus repos a consumer checks out at the repo root (NOT the bundled examples/corpus fixture).
+/corpus/
+*.bak
+.DS_Store

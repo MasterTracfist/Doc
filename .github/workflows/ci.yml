@@ -1,0 +1,22 @@
+name: CI
+
+# Self-test for the DocForge engine: build the bundled sample corpus (examples/) and run the
+# documentation quality gate against it. Uses no external data, so it proves the pipeline —
+# discover → classify → assemble → generate → render → gate — works on every push and PR.
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-and-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci || npm install
+      - name: Build sample manual + enforce gate
+        run: node src/index.js build --config=examples/docforge.config.json --min-coverage=70 --max-broken=0

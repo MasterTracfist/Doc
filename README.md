@@ -70,7 +70,7 @@ and `DOCFORGE_MAX_BROKEN` (see [`ci/pre-push`](ci/pre-push)).
 
 **GitHub Actions in your project** — run the gate in the repo(s) you document. Check the corpus out,
 then run DocForge (e.g. `npx github:<org>/docforge build --config=<your-config> --min-coverage=85`).
-A worked multi-repo example lives in the Tracfist `tracfist-docs` consumer repo; the pattern is: one
+For a multi-repo manual the pattern is: one
 `actions/checkout` per documented repo into `corpus/<name>`, a config with relative `corpus/*` roots,
 then the gated build. A missing root is skipped with a warning, so partial corpora still gate.
 
@@ -134,7 +134,7 @@ node src/index.js capture --target=app
 # just one page across targets (substring match on route path/label)
 node src/index.js capture --target=app --route=devices
 # or one ad-hoc URL
-node src/index.js capture --url=https://app.tracfist.ai --name="Tracfist App"
+node src/index.js capture --url=https://app.example.com --name="My App"
 node src/index.js build      # folds screens.json into the Product Screens page
 ```
 
@@ -142,8 +142,8 @@ A full `capture` overwrites `screens.json`; a **filtered** run (`--target`/`--ro
 **merges** — it refreshes only the matched screens and leaves the rest of the manifest intact, so
 you can re-shoot one page without re-running the whole ~50-page sweep.
 
-Targets live under `screens.targets` in the config and point at the **live GCP deployment**
-(`app.tracfist.ai`, `admin.tracfist.ai`, `api.tracfist.ai`). Each target has routes
+Targets live under `screens.targets` in the config and point at your **deployed apps**
+(e.g. `app.example.com`, `admin.example.com`, `api.example.com`). Each target has routes
 (`{ path, label, waitMs }`); full-page PNGs land in `assets/screens/` with a `screens.json`
 manifest. Capture is a separate command (not part of `build`) because it depends on the apps
 being reachable. Override the browser with `CHROME_BIN`.
@@ -156,11 +156,11 @@ Claude's context.** The tool fills the live login form, submits, waits, then cap
 protected routes in the same session.
 
 ```bash
-export TRACFIST_APP_USER='you@tracfist.ai'      # app.tracfist.ai
-export TRACFIST_APP_PASS='…'
-export TRACFIST_ADMIN_USER='…'                  # admin.tracfist.ai
-export TRACFIST_ADMIN_PASS='…'
-export TRACFIST_ADMIN_TOTP='<base32-MFA-secret>'  # optional; RFC-6238 code is generated for you
+export APP_USER='you@example.com'          # names referenced by the target's auth block
+export APP_PASS='…'
+export ADMIN_USER='…'
+export ADMIN_PASS='…'
+export ADMIN_TOTP='<base32-MFA-secret>'    # optional; RFC-6238 code is generated for you
 node src/index.js capture && node src/index.js build
 ```
 
@@ -172,8 +172,8 @@ vars aren't set, that target silently falls back to public-page capture.
 
 Rather than hand-list pages, give a target a `sourceRepo` and DocForge reads its React Router
 definitions ([routes.js](src/routes.js)) and captures **every** page (skipping `:param` routes,
-wildcards, and auth/utility paths; `excludeRoutes`/`maxRoutes` to trim). The Tracfist app expands
-to ~40 routes, the console to ~8.
+wildcards, and auth/utility paths; `excludeRoutes`/`maxRoutes` to trim). A typical SPA expands to a
+few dozen routes this way.
 
 Because the frontends are **client-routed SPAs**, hitting a deep URL like `/devices` directly would
 return an nginx **403** (the server only serves the app at `/`). So targets marked `"spa": true`

@@ -109,17 +109,12 @@ ${edgeSvg}${boxes}
 </svg>`;
 }
 
-// ── Telemetry pipeline: a clean left-to-right flow of the canonical data path ──
-export function pipelineSVG(scan) {
-  const hasDevice = scan.repos.some(r => r.tier === 'device');
-  const steps = [
-    hasDevice ? { t: 'Tracker', s: 'Thingy:91 firmware', c: C.tier.device } : null,
-    { t: 'HiveMQ', s: 'MQTT/TLS broker', c: C.tier.bus },
-    { t: 'Kafka', s: 'tracfist.positions', c: C.tier.bus },
-    { t: 'Middleware', s: 'consumer → ingest()', c: C.tier.service },
-    { t: 'PostgreSQL', s: 'canonical store', c: C.tier.data },
-    { t: 'WebSocket / UI', s: 'live dashboards', c: C.tier.client },
-  ].filter(Boolean);
+// ── Data pipeline: a clean left-to-right flow of components ──
+// `steps` is an array of { t, s, tier } (built by generate.js from config or the scanned stack);
+// `title` defaults to a generic label. The engine itself is project-agnostic — any data path
+// (telemetry, ETL, request flow) is described entirely by the supplied steps.
+export function pipelineSVG(steps, title = 'Data Pipeline') {
+  steps = (steps || []).map(s => ({ t: s.t, s: s.s, c: C.tier[s.tier] || C.tier.ext }));
   const BW = 168, BH = 60, GAP = 56, PAD = 40, Y = 70;
   const W = PAD * 2 + steps.length * BW + (steps.length - 1) * GAP;
   const H = 170;
@@ -135,7 +130,7 @@ export function pipelineSVG(scan) {
   return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,Segoe UI,Roboto,sans-serif">
 <defs><marker id="arr2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="${C.muted}"/></marker></defs>
 <rect width="${W}" height="${H}" rx="12" fill="${C.bg}"/>
-<text x="${PAD}" y="40" fill="${C.ink}" font-size="20" font-weight="700">Telemetry Pipeline</text>
+<text x="${PAD}" y="40" fill="${C.ink}" font-size="20" font-weight="700">${esc(title)}</text>
 ${arrows}${body}
 </svg>`;
 }

@@ -2,6 +2,8 @@
   "name": "docforge",
   "version": "0.1.0",
   "description": "Repository -> Manual builder. Crawls repos for Markdown + screens + other material and renders a complete user guide and technical manual.",
+  "license": "MIT",
+  "author": "Sean Bowen",
   "type": "module",
   "bin": {
     "docforge": "src/index.js"

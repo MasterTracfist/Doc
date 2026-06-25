@@ -89,7 +89,7 @@ export function render(book, cfg, gen) {
   try { SCREENS = JSON.parse(fs.readFileSync(path.join(outDir, 'screens.json'), 'utf8')); } catch { /* none */ }
 
   // Coverage analysis (attaches per-section status used for inline badges below).
-  REVIEW = analyzeReview(book, gen, SCREENS);
+  REVIEW = analyzeReview(book, gen, SCREENS, { linkScope: cfg.linkScope });
   console.log(`        review: ${REVIEW.coverage}% coverage · ${REVIEW.gapCount} gaps (${REVIEW.thin.length} thin/stub, ${REVIEW.undocumentedEntities.length} undoc'd entities, ${REVIEW.reposWithoutDocs.length} undoc'd repos)`);
 
   // Generated System Architecture page (synthesized SVG diagrams + stack matrix).

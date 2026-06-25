@@ -12,20 +12,27 @@ function wordCount(md) {
   return (md.replace(/```[\s\S]*?```/g, ' ').replace(/[#>*`_|\-]/g, ' ').match(/[A-Za-z0-9]+/g) || []).length;
 }
 
-function brokenLinks(md, file) {
+// Find broken relative links in `md`. When `root` is given (linkScope: "root"), links that resolve
+// outside that root — i.e. cross-repo `../other-repo/…` references — are skipped: they can't be
+// validated from a single repo and are checked instead by the full-corpus build.
+function brokenLinks(md, file, root) {
   const dir = path.dirname(file);
+  const rootAbs = root ? path.resolve(root) : null;
   const out = [];
   for (const m of md.matchAll(/\]\(([^)\s]+)/g)) {
     let ref = m[1];
     if (/^(https?:|#|mailto:|tel:)/.test(ref)) continue;
     ref = ref.split('#')[0];
     if (!ref) continue;
-    if (!fs.existsSync(path.resolve(dir, ref))) out.push(ref);
+    const resolved = path.resolve(dir, ref);
+    if (rootAbs && !(resolved === rootAbs || resolved.startsWith(rootAbs + path.sep))) continue;
+    if (!fs.existsSync(resolved)) out.push(ref);
   }
   return [...new Set(out)];
 }
 
-export function analyzeReview(book, gen, screens = []) {
+export function analyzeReview(book, gen, screens = [], opts = {}) {
+  const scopeToRoot = opts.linkScope === 'root';
   const sections = [];
   const docStats = {};
   let corpus = '';
@@ -37,7 +44,10 @@ export function analyzeReview(book, gen, screens = []) {
       corpus += ' ' + (s.title || '') + ' ' + (s.summary || '') + ' ' + body.toLowerCase();
       const wc = wordCount(body);
       const status = wc < STUB_MAX ? 'stub' : wc < THIN_MAX ? 'thin' : 'complete';
-      const broken = brokenLinks(body, s.path);
+      // The section's repo root = its absolute path with the repo-relative path removed.
+      const root = scopeToRoot && s.rel && s.path.endsWith(s.rel)
+        ? s.path.slice(0, s.path.length - s.rel.length) : null;
+      const broken = brokenLinks(body, s.path, root);
       const rec = { docId: doc.id, docTitle: doc.title, title: s.title, repo: s.repo, rel: s.rel,
         anchor: slug(s.repo + '-' + s.title), wc, status, hasImg: (s.linkedImages || []).length > 0, broken };
       sections.push(rec);

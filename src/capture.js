@@ -146,6 +146,16 @@ async function login(cdp, t, vp) {
   if (!res?.ok) return 'failed:form-fields-not-found';
   if (!res.submitted) return 'failed:no-submit-control';
   await sleep(a.successWaitMs ?? 3000); // let the post-login navigation + first data load settle
+
+  // Verify the login actually took. If a password field is still on the page after submitting,
+  // the credentials were rejected — report it rather than falsely claiming "signed in".
+  try {
+    const chk = await cdp.send('Runtime.evaluate', {
+      expression: `(() => ({ pw: !!document.querySelector('input[type=password]') }))()`,
+      returnByValue: true,
+    });
+    if (chk.result?.value?.pw) return 'failed:credentials-rejected';
+  } catch { /* if the check itself fails, fall through and assume ok */ }
   return 'ok';
 }
 
@@ -252,13 +262,14 @@ export async function captureScreens(cfg, opts = {}) {
     await setViewport(cdp, vp);
     const slugify = (x) => String(x).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     for (const t of live) {
-      let authed = false;
+      let authed = false, loginStatus = null;
       if (t.auth) {
-        const st = await login(cdp, t, vp);
-        authed = st === 'ok';
-        if (st === 'ok') console.log(`  ⤷ ${t.name}: signed in`);
-        else if (st === 'missing-creds') console.log(`  ⤷ ${t.name}: auth configured but ${[t.auth.userEnv, t.auth.passEnv].filter(Boolean).join('/')} not set — capturing public pages only`);
-        else if (st !== 'skipped') console.log(`  ⤷ ${t.name}: login ${st} — capturing public pages only`);
+        loginStatus = await login(cdp, t, vp);
+        authed = loginStatus === 'ok';
+        if (loginStatus === 'ok') console.log(`  ⤷ ${t.name}: signed in (verified)`);
+        else if (loginStatus === 'missing-creds') console.log(`  ⤷ ${t.name}: auth configured but ${[t.auth.userEnv, t.auth.passEnv].filter(Boolean).join('/')} not set — capturing public pages only`);
+        else if (loginStatus === 'failed:credentials-rejected') console.log(`  ✗ ${t.name}: login REJECTED — wrong ${t.auth.userEnv}/${t.auth.passEnv}? (still on a login page after submit) — capturing public pages only`);
+        else if (loginStatus !== 'skipped') console.log(`  ⤷ ${t.name}: login ${loginStatus} — capturing public pages only`);
       }
       // SPA targets: boot the app once at "/", then route client-side (no per-page GET → no nginx 403).
       if (t.spa && !authed) await gotoFull(cdp, t.baseUrl.replace(/\/$/, '') + '/', 1600);
@@ -283,7 +294,14 @@ export async function captureScreens(cfg, opts = {}) {
           console.log(`  ! failed ${url}: ${e.message}`);
         }
       }
-      if (gated > 0) console.log(`  ⓘ ${t.name}: ${gated} route(s) collapsed to an already-captured page (login/redirect) — set ${t.auth?.userEnv || 'credentials'} to capture distinct pages.`);
+      if (gated > 0) {
+        const why = loginStatus === 'failed:credentials-rejected'
+          ? `the login was rejected — check the password in ${t.auth.passEnv}`
+          : (t.auth && loginStatus !== 'ok')
+            ? `set ${[t.auth.userEnv, t.auth.passEnv].filter(Boolean).join('/')}`
+            : 'these pages need authentication';
+        console.log(`  ⓘ ${t.name}: ${gated} route(s) collapsed to an already-captured page (login/redirect) — ${why}.`);
+      }
     }
     cdp.close();
   } finally {

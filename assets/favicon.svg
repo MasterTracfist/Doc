@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <rect width="64" height="64" rx="14" fill="#0a1020"/>
+  <rect x="6" y="6" width="52" height="52" rx="11" fill="#6fdc8c" fill-opacity="0.15"/>
+  <rect x="1.5" y="1.5" width="61" height="61" rx="12.5" fill="none" stroke="#6fdc8c" stroke-opacity="0.6" stroke-width="2"/>
+  <text x="32" y="43" font-family="-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif" font-size="30" font-weight="700" text-anchor="middle" fill="#6fdc8c" letter-spacing="-1">Dc</text>
+</svg>

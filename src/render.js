@@ -48,12 +48,13 @@ function shell(title, subtitle, nav, content) {
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${title}</title>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <link rel="stylesheet" href="assets/style.css">
 </head><body>
 <aside class="sidebar">
-  <div class="brand"><strong>${subtitle.split('—')[0] || title}</strong><span>${subtitle}</span></div>
+  <div class="brand"><svg class="brandmark" viewBox="0 0 32 32" width="30" height="30"><rect width="32" height="32" rx="7" fill="#0a1020"/><rect x="3.5" y="3.5" width="25" height="25" rx="5.5" fill="#6fdc8c" fill-opacity="0.16"/><rect x="1" y="1" width="30" height="30" rx="6.5" fill="none" stroke="#6fdc8c" stroke-opacity="0.6" stroke-width="1.4"/><text x="16" y="22" font-family="-apple-system,Helvetica,Arial,sans-serif" font-size="15" font-weight="700" text-anchor="middle" fill="#6fdc8c" letter-spacing="-0.5">Dc</text></svg><div class="brandtext"><strong>${title.includes('—') ? title.split('—').pop().trim() : title}</strong><span>${subtitle}</span></div></div>
   <nav>${nav}</nav>
-  <div class="built">Built by Doc</div>
+  <div class="built"><svg viewBox="0 0 32 32" width="16" height="16" style="vertical-align:-3px;margin-right:5px"><rect width="32" height="32" rx="7" fill="#0a1020"/><rect x="3.5" y="3.5" width="25" height="25" rx="5.5" fill="#6fdc8c" fill-opacity="0.16"/><rect x="1" y="1" width="30" height="30" rx="6.5" fill="none" stroke="#6fdc8c" stroke-opacity="0.6" stroke-width="1.4"/><text x="16" y="22" font-family="-apple-system,Helvetica,Arial,sans-serif" font-size="15" font-weight="700" text-anchor="middle" fill="#6fdc8c" letter-spacing="-0.5">Dc</text></svg>Built by Doc</div>
 </aside>
 <main class="content">${content}</main>
 </body></html>`;
@@ -99,6 +100,7 @@ export function render(book, cfg, gen) {
 
   // style
   fs.copyFileSync(path.join(__dirname, '..', 'assets', 'style.css'), path.join(outDir, 'assets', 'style.css'));
+  fs.copyFileSync(path.join(__dirname, '..', 'assets', 'favicon.svg'), path.join(outDir, 'assets', 'favicon.svg'));
 
   // Optional, opt-in: attach a captured screen to a doc section by title match, for inline embedding.
   // OFF by default — crude title matching collides on generic words (e.g. a "Temperature monitoring"
